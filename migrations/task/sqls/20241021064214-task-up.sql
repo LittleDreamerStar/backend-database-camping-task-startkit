@@ -281,9 +281,17 @@ SELECT
     SUM(purchased_credits) as total
 FROM "CREDIT_PURCHASE"
 WHERE user_id = ( SELECT id FROM "USER" WHERE email = 'wXlTq@hexschooltest.io' )
-group by user_id;
+GROUP BY user_id;
 
 -- 5-7. 查詢：計算用戶王小明的已使用堂數，顯示須包含以下欄位： user_id , total。 (需使用到 Count 函式與 Group By)
+
+SELECT 
+    user_id,
+    COUNT(*) as total
+FROM "COURSE_BOOKING"
+WHERE user_id = ( SELECT id FROM "USER" WHERE email = 'wXlTq@hexschooltest.io' )
+AND status != '課程已取消'
+GROUP BY user_id;
 
 -- 5-8. [挑戰題] 查詢：請在一次查詢中，計算用戶王小明的剩餘可用堂數，顯示須包含以下欄位： user_id , remaining_credit
     -- 提示：
@@ -291,6 +299,31 @@ group by user_id;
     -- from ( 用戶王小明的購買堂數 ) as "CREDIT_PURCHASE"
     -- inner join ( 用戶王小明的已使用堂數) as "COURSE_BOOKING"
     -- on "COURSE_BOOKING".user_id = "CREDIT_PURCHASE".user_id;
+
+SELECT 
+    "CREDIT_PURCHASE".user_id,
+    ( "CREDIT_PURCHASE".total_credits - "COURSE_BOOKING".used_credits ) AS  remaining_credit
+FROM 
+(
+    SELECT 
+        user_id,
+        SUM(purchased_credits) as total_credits
+    FROM "CREDIT_PURCHASE"
+    WHERE user_id = ( SELECT id FROM "USER" WHERE email = 'wXlTq@hexschooltest.io' )
+    GROUP BY user_id
+) AS "CREDIT_PURCHASE"
+JOIN  
+(
+    SELECT 
+        user_id,
+        COUNT(*) as used_credits
+    FROM "COURSE_BOOKING"
+    WHERE user_id = ( SELECT id FROM "USER" WHERE email = 'wXlTq@hexschooltest.io' )
+    AND status != '課程已取消'
+    GROUP BY user_id
+) AS "COURSE_BOOKING"
+ON "COURSE_BOOKING".user_id = "CREDIT_PURCHASE".user_id;
+
 
 
 -- ████████  █████   █     ███  
